@@ -158,45 +158,46 @@ resource "aws_subnet" "subnet-2" {
 }
 
 # Define the security group
-resource "aws_security_group" "eks_security_group" {
-  vpc_id      = data.aws_vpc.main.id
-  description = "Allowing Jenkins, Sonarqube, SSH Access"
+# resource "aws_security_group" "eks_security_group" {
+#   vpc_id      = data.aws_vpc.main.id
+#   description = "Allowing Jenkins, Sonarqube, SSH Access"
 
-  ingress = [
-    for port in [22, 8080, 9000, 9090, 80] : {
-      description      = "TLS from VPC"
-      from_port        = port
-      to_port          = port
-      protocol         = "tcp"
-      ipv6_cidr_blocks = ["::/0"]
-      self             = false
-      prefix_list_ids  = []
-      security_groups  = []
-      cidr_blocks      = ["0.0.0.0/0"]
-    }
-  ]
+#   ingress = [
+#     for port in [22, 8080, 9000, 9090, 80] : {
+#       description      = "TLS from VPC"
+#       from_port        = port
+#       to_port          = port
+#       protocol         = "tcp"
+#       ipv6_cidr_blocks = ["::/0"]
+#       self             = false
+#       prefix_list_ids  = []
+#       security_groups  = []
+#       cidr_blocks      = ["0.0.0.0/0"]
+#     }
+#   ]
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
 
-  tags = {
-    Name = "devops-project-vijay"
-  }
-}
+#   tags = {
+#     Name = "devops-project-vijay"
+#   }
+# }
 
 
 # Data source for the existing security group
-# data "aws_security_group" "eks_sg" {
-#   vpc_id = data.aws_vpc.main.id
-#   filter {
-#     name = "tag:Name"
-#     values = ["devops-project-vijay"]
-#   }
-# }
+data "aws_security_group" "eks_sg" {
+  vpc_id = data.aws_vpc.main.id
+  filter {
+    name = "tag:Name"
+    # values = ["devops-project-vijay"]
+    values = [aws_security_group.security_group.id]
+  }
+}
 
 # Creating EKS Cluster
 resource "aws_eks_cluster" "eks" {
