@@ -231,8 +231,8 @@ resource "aws_eks_node_group" "node-grp" {
   instance_types  = ["t2.large"]
 
   remote_access {
-    ec2_ssh_key               = "provisioner"
-    source_security_group_ids = [aws_security_group.eks_security_group.id]
+    ec2_ssh_key               = "west-key"
+    source_security_group_ids = [aws_security_group.eks_security_group.id] 
   }
 
   labels = {
@@ -242,11 +242,12 @@ resource "aws_eks_node_group" "node-grp" {
   scaling_config {
     desired_size = 2
     max_size     = 4
-    min_size     = 1
+    min_size     = 1    
   }
 
   update_config {
     max_unavailable = 1
+    
   }
 
   depends_on = [
