@@ -194,8 +194,7 @@ data "aws_security_group" "eks_security_group" {
   vpc_id = data.aws_vpc.main.id
   filter {
     name = "tag:Name"
-    # values = ["devops-project-vijay"]
-    values = ["Jumphost-main-sg"]
+    values = [ "Jumphost-main-sg" ]
   }
 }
 
