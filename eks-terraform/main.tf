@@ -206,7 +206,7 @@ resource "aws_eks_cluster" "eks" {
   vpc_config {
    
     subnet_ids         = [aws_subnet.subnet-1.id, aws_subnet.subnet-2.id]
-    security_group_ids = [aws_security_group.eks_security_group.id]
+    security_group_ids = [data.aws_security_group.eks_security_group.id]
   }
 
   tags = {
@@ -232,7 +232,7 @@ resource "aws_eks_node_group" "node-grp" {
 
   remote_access {
     ec2_ssh_key               = "west-key"
-    source_security_group_ids = [aws_security_group.eks_security_group.id] 
+    source_security_group_ids = [data.aws_security_group.eks_security_group.id] 
   }
 
   labels = {
