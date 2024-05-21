@@ -190,12 +190,12 @@ resource "aws_subnet" "subnet-2" {
 
 
 # Data source for the existing security group
-data "aws_security_group" "eks_sg" {
+data "aws_security_group" "eks_security_group" {
   vpc_id = data.aws_vpc.main.id
   filter {
     name = "tag:Name"
     # values = ["devops-project-vijay"]
-    values = [aws_security_group.security_group.id]
+    values = ["Jumphost-main-sg"]
   }
 }
 
