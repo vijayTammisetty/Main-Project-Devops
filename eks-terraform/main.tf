@@ -195,7 +195,7 @@ data "aws_security_group" "eks_security_group" {
   filter {
     name = "tag:Name"
     # values = ["devops-project-vijay"]
-    values = [aws_security_group.security_group.id]
+    values = [data.aws_security_group.security_group.id]
   }
 }
 
