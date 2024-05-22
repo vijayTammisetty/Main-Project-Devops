@@ -118,75 +118,22 @@ data "aws_vpc" "main" {
 }
 
 # Data source for existing subnets
-# data "aws_subnet" "subnet-1" {
-#   vpc_id = data.aws_vpc.main.id
-#   filter {
-#     name   = "tag:Name"
-#     values = ["MyPublicSubnet01"]
-#   }
-# }
-
-# data "aws_subnet" "subnet-2" {
-#   vpc_id = data.aws_vpc.main.id
-#   filter {
-#     name   = "tag:Name"
-#     values = ["MyPublicSubnet02"]
-#   }
-# }
-
-
-resource "aws_subnet" "subnet-1" {
-  vpc_id                  = data.aws_vpc.main.id
-  cidr_block              = "10.0.3.0/24"
-  availability_zone       = "us-west-1b"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "MyPublicSubnet01"
+data "aws_subnet" "subnet-1" {
+  vpc_id = data.aws_vpc.main.id
+  filter {
+    name   = "tag:Name"
+    values = ["Jumphost-main-subnet1"]
   }
 }
 
-resource "aws_subnet" "subnet-2" {
-  vpc_id                  = data.aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-west-1c"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "MyPublicSubnet02"
+data "aws_subnet" "subnet-2" {
+  vpc_id = data.aws_vpc.main.id
+  filter {
+    name   = "tag:Name"
+    values = ["Jumphost-main-subnet2"]
   }
 }
 
-# Define the security group
-# resource "aws_security_group" "eks_security_group" {
-#   vpc_id      = data.aws_vpc.main.id
-#   description = "Allowing Jenkins, Sonarqube, SSH Access"
-
-#   ingress = [
-#     for port in [22, 8080, 9000, 9090, 80] : {
-#       description      = "TLS from VPC"
-#       from_port        = port
-#       to_port          = port
-#       protocol         = "tcp"
-#       ipv6_cidr_blocks = ["::/0"]
-#       self             = false
-#       prefix_list_ids  = []
-#       security_groups  = []
-#       cidr_blocks      = ["0.0.0.0/0"]
-#     }
-#   ]
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   tags = {
-#     Name = "devops-project-vijay"
-#   }
-# }
 
 
 # Data source for the existing security group
@@ -205,7 +152,7 @@ resource "aws_eks_cluster" "eks" {
 
   vpc_config {
    
-    subnet_ids         = [aws_subnet.subnet-1.id, aws_subnet.subnet-2.id]
+    subnet_ids         = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
     security_group_ids = [data.aws_security_group.eks_security_group.id]
   }
 
@@ -225,7 +172,7 @@ resource "aws_eks_node_group" "node-grp" {
   cluster_name    = aws_eks_cluster.eks.name
   node_group_name = "project-node-group"
   node_role_arn   = aws_iam_role.worker.arn
-  subnet_ids      = [aws_subnet.subnet-1.id, aws_subnet.subnet-2.id]
+  subnet_ids      = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
   capacity_type   = "ON_DEMAND"
   disk_size       = 20
   instance_types  = ["t2.large"]

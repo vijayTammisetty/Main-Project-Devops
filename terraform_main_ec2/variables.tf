@@ -16,11 +16,18 @@ variable "igw-name" {
   default = "Jumphost-main-igw"
 }
 
-variable "subnet-name" {
+variable "subnet-name1" {
   description = "Subnet Name for our Jumphost server"
   type = string
-  default = "Jumphost-main-subnet"
+  default = "Jumphost-main-subnet1"
 }
+
+variable "subnet-name2" {
+  description = "Subnet Name for our Jumphost server"
+  type = string
+  default = "Jumphost-main-subnet2"
+}
+
 
 variable "rt-name" {
   description = "Route Table Name for our Jumphost server"
