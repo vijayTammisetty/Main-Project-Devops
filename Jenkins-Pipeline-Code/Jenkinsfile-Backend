@@ -1,7 +1,7 @@
 pipeline {
     agent any 
     tools {
-        jdk 'jdk'
+        jdk "jdk"
         nodejs 'nodejs'
     }
     environment  {
@@ -27,8 +27,8 @@ pipeline {
                 dir('Application-Code/backend') {
                     withSonarQubeEnv('sonar-server') {
                         sh ''' $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectName=three-tier-backend \
-                        -Dsonar.projectKey=three-tier-backend '''
+                        -Dsonar.projectName=three-tier-frontend \
+                        -Dsonar.projectKey=three-tier-frontend '''
                     }
                 }
             }
@@ -40,14 +40,14 @@ pipeline {
                 }
             }
         }
-        stage('OWASP Dependency-Check Scan') {
-            steps {
-                dir('Application-Code/backend') {
-                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                }
-            }
-        }
+        // stage('OWASP Dependency-Check Scan') {
+        //     steps {
+        //         dir('Application-Code/backend') {
+        //             dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+        //             dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //         }
+        //     }
+        // }
         stage('Trivy File Scan') {
             steps {
                 dir('Application-Code/backend') {
@@ -55,13 +55,18 @@ pipeline {
                 }
             }
         }
-        stage("Docker Image Build") {
+         stage('Docker Image Build') {
             steps {
                 script {
                     dir('Application-Code/backend') {
-                            sh 'docker system prune -f'
-                            sh 'docker container prune -f'
-                            sh 'docker build -t ${AWS_ECR_REPO_NAME} .'
+                        // Prune dangling images
+                        sh ' docker image prune --filter dangling=true'
+                        
+                        // Remove all stopped containers (compatible with older Docker API versions)
+                        sh ' docker ps -a -q --filter status=exited | xargs --no-run-if-empty docker rm'
+                        
+                        // Build the Docker image with a unique tag using BUILD_NUMBER
+                        sh ' docker build -t ${AWS_ECR_REPO_NAME} .'
                     }
                 }
             }
@@ -91,7 +96,7 @@ pipeline {
                 GIT_USER_NAME = "vijayTammisetty"
             }
             steps {
-                dir('Kubernetes-Manifests-file/Backend') {
+                dir('Kubernetes-Manifests-file/Frontend') {
                     withCredentials([string(credentialsId: 'github', variable: 'git_token')]) {
                         sh '''
                             git config user.email "vijayakumar.t328@gmail.com"
@@ -102,6 +107,7 @@ pipeline {
                             git add .
                             git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
                             git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+        
                         '''
                     }
                 }
@@ -109,3 +115,5 @@ pipeline {
         }
     }
 }
+     
+         

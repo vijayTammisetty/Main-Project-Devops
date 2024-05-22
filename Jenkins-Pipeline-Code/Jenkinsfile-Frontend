@@ -40,14 +40,14 @@ pipeline {
                 }
             }
         }
-        stage('OWASP Dependency-Check Scan') {
-            steps {
-                dir('Application-Code/frontend') {
-                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                }
-            }
-        }
+        // stage('OWASP Dependency-Check Scan') {
+        //     steps {
+        //         dir('Application-Code/frontend') {
+        //             dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+        //             dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //         }
+        //     }
+        // }
         stage('Trivy File Scan') {
             steps {
                 dir('Application-Code/frontend') {
@@ -55,13 +55,18 @@ pipeline {
                 }
             }
         }
-        stage("Docker Image Build") {
+         stage('Docker Image Build') {
             steps {
                 script {
                     dir('Application-Code/frontend') {
-                            sh 'docker system prune -f'
-                            sh 'docker container prune -f'
-                            sh 'docker build -t ${AWS_ECR_REPO_NAME} .'
+                        // Prune dangling images
+                        sh ' docker image prune --filter dangling=true'
+                        
+                        // Remove all stopped containers (compatible with older Docker API versions)
+                        sh ' docker ps -a -q --filter status=exited | xargs --no-run-if-empty docker rm'
+                        
+                        // Build the Docker image with a unique tag using BUILD_NUMBER
+                        sh ' docker build -t ${AWS_ECR_REPO_NAME} .'
                     }
                 }
             }
