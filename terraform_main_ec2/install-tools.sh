@@ -88,6 +88,13 @@ helm install stable prometheus-community/kube-prometheus-stack -n prometheus
 
 echo "Initialization script completed successfully."
 
+#----------------EBS CSI Driver for Kubernetes volumes 
+helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+helm repo update
+
+#install aws ebs driver to kubernets 
+helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
+
 #----------------------sonarQube install-----------------------------------
 #sudo yum -y install wget nfs-utils
 #sudo wget -O /etc/yum.repos.d/sonar.repo http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo
